@@ -1,0 +1,5 @@
+id,brand,model,year,price,rented,category
+1,Toyota,Corolla,2020,20000.0,true
+3,Mercedes-Benz,C-Class,2021,40000.0,false
+4,Honda,CBR500R,2020,6000.0,true,A2
+5,Toyota,Land Cruise,2019,56.789,false
