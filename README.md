@@ -1,6 +1,6 @@
 # Spring Framework
 
-### First application on the Spring Framework subject.
+### First project in Spring Framework subject.
 
 ## Description
     - Classic java application without Spring yet.
