@@ -5,6 +5,9 @@ import umcs.pl.auth.Authentication;
 import umcs.pl.models.Car;
 import umcs.pl.models.Motorcycle;
 import umcs.pl.models.Vehicle;
+import umcs.pl.services.RentalService;
+import umcs.pl.services.UserService;
+import umcs.pl.services.VehicleService;
 import umcs.pl.user.Role;
 import umcs.pl.user.User;
 import umcs.pl.user.UserRepository;
@@ -14,8 +17,9 @@ import java.util.Scanner;
 
 public class Main {
     private static final Scanner scanner = new Scanner(System.in);
-    private static VehicleRepository vehicleRepository;
-    private static UserRepository userRepository;
+    private static VehicleService vehicleService;
+    private static UserService userService;
+    private static RentalService rentalService;
     private static Authentication auth;
 
     public static void main(String[] args) {
@@ -33,9 +37,12 @@ public class Main {
     }
 
     private static void initializeRepositories() {
-        vehicleRepository = new VehicleRepository("vehicles.csv");
-        userRepository = new UserRepository("users.csv", vehicleRepository);
+        VehicleRepository vehicleRepository = new VehicleRepository("vehicles.csv");
+        vehicleService = new VehicleService(vehicleRepository);
+        UserRepository userRepository = new UserRepository("users.csv", vehicleRepository);
+        userService = new UserService(userRepository);
         auth = new Authentication(userRepository);
+        rentalService = new RentalService(vehicleRepository, userRepository);
     }
 
     private static void showMainMenu() throws CloneNotSupportedException {
@@ -89,8 +96,8 @@ public class Main {
 
             int choice = getIntInput();
             switch (choice) {
-                case 1 -> rentVehicle(user);
-                case 2 -> returnVehicle(user);
+                case 1 -> rentalService.rentVehicle(user);
+                case 2 -> rentalService.returnVehicle(user);
                 case 3 -> System.out.println(user);
                 case 4 -> {
                     return;
@@ -114,103 +121,18 @@ public class Main {
 
             int choice = getIntInput();
             switch (choice) {
-                case 1 -> rentVehicle(user);
-                case 2 -> returnVehicle(user);
-                case 3 -> addVehicle();
-                case 4 -> removeVehicle();
-                case 5 -> listUsers();
-                case 6 -> listVehicles();
+                case 1 -> rentalService.rentVehicle(user);
+                case 2 -> rentalService.returnVehicle(user);
+                case 3 -> vehicleService.addVehicle();
+                case 4 -> vehicleService.removeVehicle();
+                case 5 -> userService.listUsers();
+                case 6 -> vehicleService.listVehicles();
                 case 7 -> {
                     return;
                 }
                 default -> System.out.println("Invalid option. Try again.");
             }
         }
-    }
-
-    private static void rentVehicle(User user) {
-        if (user.getRentedVehicle() != null) {
-            System.out.println("You already have a rented vehicle.");
-            return;
-        }
-
-        System.out.print("Enter vehicle ID to rent: ");
-        String vehicleId = scanner.nextLine();
-        try {
-            vehicleRepository.rentVehicle(vehicleId);
-            Vehicle rentedVehicle = vehicleRepository.getVehicles().stream()
-                    .filter(v -> v.getId().equals(vehicleId))
-                    .findFirst().orElse(null);
-            user.setRentedVehicle(rentedVehicle);
-            userRepository.save();
-            System.out.println("Vehicle rented successfully.");
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            System.err.println("Error: " + e.getMessage());
-        }
-    }
-
-    private static void returnVehicle(User user) {
-        if (user.getRentedVehicle() == null) {
-            System.out.println("You have no rented vehicle.");
-            return;
-        }
-
-        System.out.print("Enter vehicle ID to return: ");
-        String vehicleId = scanner.nextLine();
-        try {
-            vehicleRepository.returnVehicle(vehicleId);
-            if (user.getRentedVehicle() != null && user.getRentedVehicle().getId().equals(vehicleId)) {
-                user.setRentedVehicle(null);
-                userRepository.save();
-            }
-            System.out.println("Vehicle returned successfully.");
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            System.err.println("Error: " + e.getMessage());
-        }
-    }
-
-    private static void addVehicle() {
-        System.out.println("Enter vehicle details (brand,model,year,price[,category]):");
-        String[] parts = scanner.nextLine().split(",");
-        try {
-            String brand = parts[0];
-            String model = parts[1];
-            int year = Integer.parseInt(parts[2]);
-            double price = Double.parseDouble(parts[3]);
-            String category = parts.length > 5 ? parts[4] : null;
-
-            String id = String.valueOf(vehicleRepository.getVehicles().stream()
-                    .mapToInt(v -> Integer.parseInt(v.getId())).max()
-                    .orElse(0) + 1);
-
-            Vehicle vehicle = category != null
-                    ? new Motorcycle(id, brand, model, year, price, false, category)
-                    : new Car(id, brand, model, year, price, false);
-
-            vehicleRepository.addVehicle(vehicle);
-            System.out.println("Vehicle added successfully.");
-        } catch (Exception e) {
-            System.err.println("Error adding vehicle: " + e.getMessage());
-        }
-    }
-
-    private static void removeVehicle() {
-        System.out.print("Enter vehicle ID to remove: ");
-        String vehicleId = scanner.nextLine();
-        try {
-            vehicleRepository.removeVehicle(vehicleId);
-            System.out.println("Vehicle removed successfully.");
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            System.err.println("Error: " + e.getMessage());
-        }
-    }
-
-    private static void listUsers() {
-        userRepository.getUsers().forEach(System.out::println);
-    }
-
-    private static void listVehicles() {
-        vehicleRepository.getVehicles().forEach(System.out::println);
     }
 
     private static void testVehicleFeatures() throws CloneNotSupportedException {
