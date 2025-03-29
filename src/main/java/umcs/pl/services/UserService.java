@@ -1,16 +1,21 @@
 package umcs.pl.services;
 
-import umcs.pl.user.User;
-import umcs.pl.user.UserRepository;
+
+import umcs.pl.repositories.IUserRepository;
 
 public class UserService {
-    private final UserRepository userRepository;
+    private final IUserRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(IUserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
     public void listUsers() {
-        userRepository.getUsers().forEach(System.out::println);
+        userRepository.findAll().forEach(user -> {
+            System.out.println("User ID: " + user.getId());
+            System.out.println("Login: " + user.getLogin());
+            System.out.println("Role: " + user.getRole());
+            System.out.println("-------------------------");
+        });
     }
 }

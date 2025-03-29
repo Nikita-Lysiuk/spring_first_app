@@ -1,4 +1,4 @@
-package umcs.pl.user;
+package umcs.pl.models;
 
 public enum Role {
     USER, ADMIN;

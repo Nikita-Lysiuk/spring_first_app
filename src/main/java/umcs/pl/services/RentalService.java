@@ -1,52 +1,74 @@
 package umcs.pl.services;
 
+import umcs.pl.models.Rental;
 import umcs.pl.models.Vehicle;
-import umcs.pl.user.User;
-import umcs.pl.user.UserRepository;
-import umcs.pl.vehicle.VehicleRepository;
+import umcs.pl.repositories.IRentalRepository;
 
-import java.util.Scanner;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 public class RentalService {
-    private final VehicleRepository vehicleRepository;
-    private final UserRepository userRepository;
-    private final Scanner scanner = new Scanner(System.in);
+    private final IRentalRepository rentalRepository;
 
-    public RentalService(VehicleRepository vehicleRepository, UserRepository userRepository) {
-        this.vehicleRepository = vehicleRepository;
-        this.userRepository = userRepository;
+    public RentalService(IRentalRepository rentalRepository) {
+        this.rentalRepository = rentalRepository;
     }
 
-    public void rentVehicle(User user) {
-        if (user.getRentedVehicle() != null) {
-            System.out.println("You already have a rented vehicle.");
-            return;
-        }
+    public Rental rentVehicle(String userId, String vehicleId) {
+        boolean isRented = rentalRepository.findByVehicleId(vehicleId).stream()
+                .anyMatch(rental -> rental.getReturnDateTime() == null);
 
-        System.out.print("Enter vehicle ID to rent: ");
-        String vehicleId = scanner.nextLine();
+        if (isRented)
+            throw new IllegalArgumentException("Vehicle is already rented.");
 
-        try {
-            vehicleRepository.rentVehicle(vehicleId);
-            Vehicle rentedVehicle = vehicleRepository.getVehicles().stream()
-                    .filter(v -> v.getId().equals(vehicleId))
-                    .findFirst().orElse(null);
-            user.setRentedVehicle(rentedVehicle);
-            userRepository.save();
-            System.out.println("Vehicle rented successfully.");
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            System.err.println("Error: " + e.getMessage());
-        }
+        Rental rental = Rental.builder()
+                .userId(userId)
+                .vehicleId(vehicleId)
+                .rentDateTime(LocalDateTime.now().toString())
+                .returnDateTime(null)
+                .build();
+
+        return rentalRepository.save(rental);
     }
 
-    public void returnVehicle(User user) {
-        if (user.getRentedVehicle() == null) {
-            System.out.println("You have no rented vehicle.");
-            return;
+    public Rental returnVehicle(String userId, String vehicleId) {
+        boolean isRented = rentalRepository.findByVehicleId(vehicleId).stream()
+                .anyMatch(rental -> rental.getReturnDateTime() == null);
+
+        if (!isRented)
+            throw new IllegalArgumentException("Vehicle is not rented.");
+
+        Rental rental = rentalRepository.findByVehicleId(vehicleId).stream()
+                .filter(r -> r.getReturnDateTime() == null)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Rental not found."));
+
+        if (!rental.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("This vehicle was not rented by you.");
         }
 
-        vehicleRepository.returnVehicle(user.getRentedVehicle().getId());
-        user.setRentedVehicle(null);
-        System.out.println("Vehicle returned successfully.");
+        rental.setReturnDateTime(LocalDateTime.now().toString());
+        return rentalRepository.save(rental);
+    }
+
+    public void showUserRentals(String userId) {
+        System.out.println("Rentals for user ID: " + userId);
+        rentalRepository.findByUserId(userId).forEach(rental -> {
+            System.out.println("Rental ID: " + rental.getId());
+            System.out.println("Vehicle ID: " + rental.getVehicleId());
+            System.out.println("Rent Date: " + rental.getRentDateTime());
+            System.out.println("Return Date: " + rental.getReturnDateTime());
+            System.out.println("-----------------------------");
+        });
+    }
+
+    public boolean isVehicleFree(Vehicle vehicle) {
+        return rentalRepository.findByVehicleId(vehicle.getId()).stream()
+                .noneMatch(rental -> rental.getReturnDateTime() == null);
+    }
+
+    public boolean isVehicleRented(Vehicle vehicle) {
+        return rentalRepository.findByVehicleId(vehicle.getId()).stream()
+                .anyMatch(rental -> rental.getReturnDateTime() == null);
     }
 }
