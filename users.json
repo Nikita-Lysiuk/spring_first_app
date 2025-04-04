@@ -1,0 +1,20 @@
+[
+  {
+    "id": "fc6e600b-e89e-42e2-b2b7-ca18edb68924",
+    "login": "lukasz",
+    "password": "$2a$10$7MUYZR8FP8ebLzfqwMK85ejBke/TNp/Yme9NrC0XxRy.NAFde2vEm",
+    "role": "ADMIN"
+  },
+  {
+    "id": "f4b5b79b-df2c-4e0a-89fc-464908d2e6dc",
+    "login": "kamil",
+    "password": "$2a$10$BwY3UtVLQTSUjX3zXjCeJ.h4Gwq4MiLhhTaUC.Yesce7rBDRkdU/i",
+    "role": "USER"
+  },
+  {
+    "id": "4d19da2e-4ecc-41b0-8dab-4c539111c617",
+    "login": "Nikita",
+    "password": "$2a$10$u.dCejz6NysFd1XhlkPcvu7Ad9LHqglwg2J3NcTXTpR97HROqnYIC",
+    "role": "USER"
+  }
+]

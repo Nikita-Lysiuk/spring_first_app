@@ -3,23 +3,23 @@ package umcs.pl;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Before;
 import org.junit.Test;
-import umcs.pl.auth.Authentication;
-import umcs.pl.user.User;
-import umcs.pl.user.UserRepository;
-import umcs.pl.vehicle.VehicleRepository;
+import umcs.pl.services.AuthService;
+import umcs.pl.models.User;
+import umcs.pl.repositories.impl.json.UserRepository;
+import umcs.pl.repositories.impl.json.VehicleRepository;
 
 import static org.junit.Assert.*;
 
 public class HashPassword {
     private static VehicleRepository vehicleRepository;
     private static UserRepository userRepository;
-    private static Authentication auth;
+    private static AuthService auth;
 
     @Before
     public void setUp() {
-        vehicleRepository = new VehicleRepository("vehicles.csv");
-        userRepository = new UserRepository("users.csv", vehicleRepository);
-        auth = new Authentication(userRepository);
+        vehicleRepository = new VehicleRepository();
+        userRepository = new UserRepository();
+        auth = new AuthService(userRepository);
     }
 
     @Test
