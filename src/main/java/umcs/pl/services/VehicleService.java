@@ -34,13 +34,14 @@ public class VehicleService {
         System.out.println("-------------------------");
     }
 
-    public Vehicle addVehicle(String category, String brand, String model, int year, String plate, Map<String, Object> attributes) {
+    public Vehicle addVehicle(String category, String brand, String model, int year, String plate, double price, Map<String, Object> attributes) {
         Vehicle vehicle = Vehicle.builder()
                 .category(category)
                 .brand(brand)
                 .model(model)
                 .year(year)
                 .plate(plate)
+                .price(price)
                 .attributes(attributes)
                 .build();
 

@@ -5,8 +5,8 @@ import org.junit.Before;
 import org.junit.Test;
 import umcs.pl.services.AuthService;
 import umcs.pl.models.User;
-import umcs.pl.user.UserRepository;
-import umcs.pl.repositories.impl.VehicleRepository;
+import umcs.pl.repositories.impl.json.UserRepository;
+import umcs.pl.repositories.impl.json.VehicleRepository;
 
 import static org.junit.Assert.*;
 
@@ -17,8 +17,8 @@ public class HashPassword {
 
     @Before
     public void setUp() {
-        vehicleRepository = new VehicleRepository("vehicles.csv");
-        userRepository = new UserRepository("users.csv", vehicleRepository);
+        vehicleRepository = new VehicleRepository();
+        userRepository = new UserRepository();
         auth = new AuthService(userRepository);
     }
 

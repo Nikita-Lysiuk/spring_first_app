@@ -6,6 +6,7 @@
     "model": "T2",
     "year": 1985,
     "plate": "LU123",
+    "price": 100.0,
     "attributes": {
       "seats": 20
     }
@@ -17,6 +18,7 @@
     "model": "CBR600",
     "year": 2016,
     "plate": "LU456",
+    "price": 200.0,
     "attributes": {
       "licence_category": "A",
       "drive": "chain"
@@ -29,6 +31,7 @@
     "model": "Corolla",
     "year": 2024,
     "plate": "LU789",
+    "price": 300.0,
     "attributes": {}
   }
 ]

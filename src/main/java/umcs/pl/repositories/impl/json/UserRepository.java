@@ -1,9 +1,9 @@
-package umcs.pl.repositories.impl;
+package umcs.pl.repositories.impl.json;
 
 import com.google.gson.reflect.TypeToken;
 import umcs.pl.models.User;
 import umcs.pl.repositories.IUserRepository;
-import umcs.pl.utils.JsonFileStorage;
+import umcs.pl.db.JsonFileStorage;
 
 import java.util.ArrayList;
 import java.util.List;

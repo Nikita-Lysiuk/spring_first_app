@@ -19,6 +19,7 @@ public class Vehicle {
     private String model;
     private int year;
     private String plate;
+    private double price;
 
     @Builder.Default
     private Map<String, Object> attributes = Map.of();

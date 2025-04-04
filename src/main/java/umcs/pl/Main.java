@@ -3,8 +3,11 @@ package umcs.pl;
 import umcs.pl.repositories.IRentalRepository;
 import umcs.pl.repositories.IUserRepository;
 import umcs.pl.repositories.IVehicleRepository;
-import umcs.pl.repositories.impl.RentalRepository;
-import umcs.pl.repositories.impl.UserRepository;
+import umcs.pl.repositories.impl.db.DBRentalRepository;
+import umcs.pl.repositories.impl.db.DBUserRepository;
+import umcs.pl.repositories.impl.db.DBVehicleJdbcRepository;
+import umcs.pl.repositories.impl.json.RentalRepository;
+import umcs.pl.repositories.impl.json.UserRepository;
 import umcs.pl.services.AuthService;
 import umcs.pl.models.Vehicle;
 import umcs.pl.services.RentalService;
@@ -12,7 +15,11 @@ import umcs.pl.services.UserService;
 import umcs.pl.services.VehicleService;
 import umcs.pl.models.Role;
 import umcs.pl.models.User;
-import umcs.pl.repositories.impl.VehicleRepository;
+import umcs.pl.repositories.impl.json.VehicleRepository;
+import umcs.pl.utils.PasswordField;
+import umcs.pl.utils.VehicleValidator;
+
+import java.io.Console;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -38,13 +45,28 @@ public class Main {
     }
 
     private static void initializeRepositories() {
-        IVehicleRepository vehicleRepository = new VehicleRepository();
-        vehicleService = new VehicleService(vehicleRepository);
-        IUserRepository userRepository = new UserRepository();
-        userService = new UserService(userRepository);
-        IRentalRepository rentalRepository = new RentalRepository();
-        rentalService = new RentalService(rentalRepository);
+        IVehicleRepository vehicleRepository;
+        IUserRepository userRepository;
+        IRentalRepository rentalRepository;
 
+        System.out.print("Choose database (json/db): ");
+        String databaseChoice = scanner.nextLine();
+        if (databaseChoice.equalsIgnoreCase("json")) {
+            vehicleRepository = new VehicleRepository();
+            userRepository = new UserRepository();
+            rentalRepository = new RentalRepository();
+        } else if (databaseChoice.equalsIgnoreCase("db")) {
+            vehicleRepository = new DBVehicleJdbcRepository();
+            userRepository = new DBUserRepository();
+            rentalRepository = new DBRentalRepository();
+        } else {
+            throw new IllegalArgumentException("Invalid database choice. Please choose 'json' or 'db'.");
+        }
+
+
+        vehicleService = new VehicleService(vehicleRepository);
+        userService = new UserService(userRepository);
+        rentalService = new RentalService(rentalRepository);
         authService = new AuthService(userRepository);
     }
 
@@ -133,6 +155,9 @@ public class Main {
         System.out.print("Enter login: ");
         String login = scanner.nextLine();
         System.out.print("Enter password: ");
+        // It does not work in IDE, but works in terminal
+        // String password = PasswordField.readPassword("*");
+        // String password = new String(System.console().readPassword());
         String password = scanner.nextLine();
 
         try {
@@ -147,8 +172,6 @@ public class Main {
         } catch (IllegalArgumentException e) {
             System.err.println("Something went wrong: " + e.getMessage());
         }
-
-
     }
 
     private static void handleRegister() {
@@ -218,6 +241,8 @@ public class Main {
         int year = getIntInput();
         System.out.print("Enter vehicle plate: ");
         String plate = scanner.nextLine();
+        System.out.print("Enter vehicle price: ");
+        double price = getIntInput();
 
         System.out.print("Enter vehicle attributes (key:value, separated by commas): ");
         String attributesInput = scanner.nextLine();
@@ -233,7 +258,11 @@ public class Main {
         }
 
         try {
-            vehicleService.addVehicle(category, brand, model, year, plate, attributes);
+            if (!VehicleValidator.validate(category, attributes)) {
+                throw new IllegalArgumentException("Invalid vehicle attributes for category: " + category);
+            }
+
+            vehicleService.addVehicle(category, brand, model, year, plate, price, attributes);
             System.out.println("Vehicle added successfully.");
         } catch (IllegalArgumentException e) {
             System.err.println("Error: " + e.getMessage());

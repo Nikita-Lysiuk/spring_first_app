@@ -1,8 +1,6 @@
-package umcs.pl.utils;
+package umcs.pl.db;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.*;
@@ -40,5 +38,4 @@ public class JsonFileStorage<T> {
             e.printStackTrace();
         }
     }
-
 }
